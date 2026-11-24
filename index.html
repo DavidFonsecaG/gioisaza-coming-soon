@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gio Isaza - Coming soon</title>
+<meta name="description" content="Gio Isaza. Bespoke tailoring and ready-to-wear. Our online store opens very soon.">
+<meta property="og:title" content="Gio Isaza - Coming soon">
+<meta property="og:description" content="Bespoke tailoring and ready-to-wear. Our online store opens very soon.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://gioisaza.com/">
+<meta name="theme-color" content="#EEEBE6">
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEEBE6; --ink:#252526; --muted:#77736C; --line:rgba(37,37,38,.08);
+  --ease-out:cubic-bezier(0.23,1,0.32,1);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:'Jost','Helvetica Neue',Arial,sans-serif;font-weight:300;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit}
+a:focus-visible,button:focus-visible{outline:1px solid var(--ink);outline-offset:4px}
+.small{font-size:11px;font-weight:400;letter-spacing:.1em;text-transform:uppercase}
+
+.page{height:100vh;height:100svh;min-height:540px;display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;overflow:hidden}
+
+.bar{background:#000;color:#fff;text-align:center;padding:6px 12px;font-size:10px;line-height:1.5;letter-spacing:.08em;text-transform:uppercase;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .short{display:none}
+
+header{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:12px clamp(20px,3.6vw,48px)}
+.lang{display:flex;gap:2px}
+.lang button{min-height:44px;min-width:40px;background:none;border:0;color:var(--muted);cursor:pointer;padding:0 6px;font-family:inherit;font-size:11px;font-weight:400;letter-spacing:.1em;transition:color 200ms ease,transform 160ms var(--ease-out)}
+.lang button[aria-pressed="true"]{color:var(--ink)}
+.lang button:active{transform:scale(0.97)}
+.logo{display:block;line-height:0}
+.logo img{height:26px;width:auto}
+.right{justify-self:end;display:flex;gap:24px;align-items:center}
+.right a{text-decoration:none;min-height:44px;display:inline-flex;align-items:center;transition:opacity 200ms ease}
+
+/* Runway */
+.stage{position:relative;min-height:0;overflow:hidden;padding:50px 0 20px;opacity:0;animation:fade 900ms ease 150ms forwards}
+.track{display:flex;height:100%;width:max-content;animation:drift 100s linear infinite}
+.look{position:relative;flex:none;height:100%;display:flex;flex-direction:column;align-items:center;margin:0;padding:0 clamp(48px,6vw,104px)}
+.look img{display:block;height:100%;width:auto;transition:transform 450ms var(--ease-out),opacity 300ms ease,filter 300ms ease}
+.cap{position:absolute;left:0;right:0;bottom:-16px;text-align:center;white-space:nowrap;opacity:0;transform:translateY(-6px);transition:opacity 250ms ease,transform 350ms var(--ease-out)}
+.cap span{color:var(--muted);margin-right:8px}
+.cap b{font-weight:400}
+
+@keyframes drift{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+
+/* Call to action: one row */
+.cta{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:16px clamp(20px,3.6vw,48px) 16px}
+.cta-text{display:flex;align-items:center;gap:18px;min-width:0}
+.mono{display:block;width:30px;height:auto;flex:none}
+.eyebrow{margin:0 0 2px;color:var(--muted)}
+h1{margin:0;font-weight:300;font-size:clamp(18px,1.7vw,24px);line-height:1.25;letter-spacing:.01em;text-transform:uppercase}
+.line{display:block;overflow:hidden}
+.line span{display:block;transform:translateY(105%);animation:rise 1000ms var(--ease-out) forwards}
+.actions{display:flex;gap:12px;flex:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:6px 26px;font-size:11px;font-weight:400;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;border:1px solid var(--ink);transition:transform 160ms var(--ease-out),background-color 200ms ease,color 200ms ease}
+.btn-solid{background:var(--ink);color:var(--bg)}
+.btn-line{background:transparent;color:var(--ink)}
+.btn:active{transform:scale(0.97)}
+.fade{opacity:0;animation:fade 700ms ease forwards}
+
+@keyframes rise{to{transform:translateY(0)}}
+@keyframes fade{to{opacity:1}}
+
+/* Hover: pause the runway, lift the look under the pointer, quiet the rest */
+@media (hover:hover) and (pointer:fine){
+  .stage:hover .track{animation-play-state:paused}
+  .track:hover .look img{opacity:.42;filter:saturate(.6)}
+  .track .look:hover img{opacity:1;filter:none;transform:translateY(-12px) scale(1.03)}
+  .look:hover .cap{opacity:1;transform:translateY(0)}
+  .btn-solid:hover{background:transparent;color:var(--ink)}
+  .btn-line:hover{background:var(--ink);color:var(--bg)}
+  .right a:hover{opacity:.55}
+  .lang button:hover{color:var(--ink)}
+}
+
+@media (max-width:760px){
+  .stage{padding:36px 0 20px}
+  .bar .long{display:none}
+  .bar .short{display:inline}
+  .look{padding:0 32px}
+  .cta{flex-direction:column;align-items:stretch;gap:14px;padding:14px 20px 16px}
+  .cta-text{justify-content:center;text-align:center}
+  .mono{display:none}
+  h1{font-size:18px}
+  .actions{gap:8px}
+  .actions .btn{flex:1;padding:6px 8px;white-space:nowrap;letter-spacing:.06em;font-size:10.5px}
+  .logo img{height:20px}
+  .right .hide-sm{display:none}
+  .track{animation-duration:70s}
+}
+@media (prefers-reduced-motion:reduce){
+  .track{animation:none}
+  .stage{overflow-x:auto;animation:fade 300ms ease forwards}
+  .line span{animation:none;transform:none}
+  .fade{animation:fade 300ms ease forwards!important}
+  .look img,.cap{transition:opacity 200ms ease}
+  .track .look:hover img{transform:none}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="bar"><span class="long" data-en="The atelier is open. Fittings and bespoke by appointment." data-es="El atelier está abierto. Pruebas y sobre medida con cita previa.">The atelier is open. Fittings and bespoke by appointment.</span><span class="short" data-en="Fittings and bespoke by appointment" data-es="Pruebas y sobre medida con cita previa">Fittings and bespoke by appointment</span></div>
+
+  <header>
+    <div class="lang" role="group" aria-label="Language / Idioma">
+      <button type="button" data-lang="en" aria-pressed="true">EN</button>
+      <button type="button" data-lang="es" aria-pressed="false">ES</button>
+    </div>
+    <a class="logo" href="/"><img src="img/wordmark.png" alt="Gio Isaza" width="193" height="26"></a>
+    <nav class="right small" aria-label="Links">
+      <a class="hide-sm" href="mailto:info@gioisaza.com" data-es="Contacto" data-en="Contact">Contact</a>
+      <a href="https://www.instagram.com/gioisaza" target="_blank" rel="noopener">Instagram</a>
+    </nav>
+  </header>
+
+  <section class="stage" aria-label="The collection">
+    <div class="track" id="track"></div>
+  </section>
+
+  <section class="cta">
+    <div class="cta-text">
+      <img class="mono fade" style="animation-delay:300ms" src="img/monogram.png" alt="" width="30" height="31">
+      <div>
+        <p class="eyebrow small fade" style="animation-delay:400ms" data-es="Próximamente" data-en="Coming soon">Coming soon</p>
+        <h1 id="headline">
+          <span class="line" aria-hidden="true"><span style="animation-delay:500ms" data-es="Hecho a mano, pronto en línea" data-en="Made by hand, soon online">Made by hand, soon online</span></span>
+        </h1>
+      </div>
+    </div>
+    <div class="actions fade" style="animation-delay:800ms">
+      <a class="btn btn-solid" href="mailto:info@gioisaza.com?subject=Atelier%20appointment" data-es="Reservar una cita" data-en="Book an appointment">Book an appointment</a>
+      <a class="btn btn-line" href="https://www.instagram.com/gioisaza" target="_blank" rel="noopener" data-es="Ver en Instagram" data-en="See it on Instagram">See it on Instagram</a>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+  var looks = [
+    ['Vestido de cuero con ojales','Eyelet leather dress'],
+    ['Abrigo cruzado de lana camel','Camel wool double-breasted coat'],
+    ['Chaqueta de cuero bordada','Embroidered leather jacket'],
+    ['Esmoquin marfil','Ivory tuxedo'],
+    ['Abrigo de rayas con solapa de satén','Striped coat with satin lapel'],
+    ['Abrigo de cuero en bloques de color','Colour-block leather coat'],
+    ['Chaqueta de cuero y animal print','Leather and leopard jacket'],
+    ['Abrigo de lana rojo','Red wool coat'],
+    ['Chaqueta de cuero plateada','Silver leather jacket'],
+    ['Chaqueta de cuero negra','Black leather jacket'],
+    ['Chaqueta de cuero texturizado','Textured leather jacket'],
+    ['Traje cruzado bordado','Embroidered double-breasted suit']
+  ];
+  var track = document.getElementById('track');
+  // Two identical sets make the loop seamless; the copy is hidden from screen readers.
+  for (var set = 0; set < 2; set++) {
+    looks.forEach(function(l, i){
+      var n = String(i + 1).padStart(2, '0');
+      var fig = document.createElement('figure');
+      fig.className = 'look';
+      if (set === 1) fig.setAttribute('aria-hidden', 'true');
+      var img = document.createElement('img');
+      img.src = 'img/looks/m' + n + '.webp';
+      img.alt = set === 0 ? l[1] : '';
+      img.loading = (set === 0 && i < 7) ? 'eager' : 'lazy';
+      img.dataset.altEs = l[0]; img.dataset.altEn = l[1];
+      var cap = document.createElement('figcaption');
+      cap.className = 'cap small';
+      cap.innerHTML = '<span>' + n + '</span><b></b>';
+      var b = cap.querySelector('b');
+      b.textContent = l[1]; b.dataset.es = l[0]; b.dataset.en = l[1];
+      fig.appendChild(img); fig.appendChild(cap);
+      track.appendChild(fig);
+    });
+  }
+
+  var buttons = document.querySelectorAll('.lang button');
+  var h1 = document.getElementById('headline');
+  function setLang(lang){
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-' + lang + ']').forEach(function(el){ el.textContent = el.getAttribute('data-' + lang); });
+    document.querySelectorAll('.look:not([aria-hidden]) img').forEach(function(img){ img.alt = lang === 'en' ? img.dataset.altEn : img.dataset.altEs; });
+    buttons.forEach(function(b){ b.setAttribute('aria-pressed', b.dataset.lang === lang ? 'true' : 'false'); });
+    h1.setAttribute('aria-label', lang === 'en' ? 'Made by hand, soon online' : 'Hecho a mano, pronto en línea');
+    document.title = lang === 'en' ? 'Gio Isaza - Coming soon' : 'Gio Isaza - Próximamente';
+    try { localStorage.setItem('gi-lang', lang); } catch(e) {}
+  }
+  buttons.forEach(function(b){ b.addEventListener('click', function(){ setLang(b.dataset.lang); }); });
+  var saved = null;
+  try { saved = localStorage.getItem('gi-lang'); } catch(e) {}
+  setLang(saved === 'es' ? 'es' : 'en');
+})();
+</script>
+</body>
+</html>
