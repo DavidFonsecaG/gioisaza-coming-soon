@@ -65,7 +65,7 @@ header{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;paddin
 .stage.dragging{cursor:grabbing}
 .look img{-webkit-user-drag:none;pointer-events:none}
 .look{position:relative;flex:none;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;margin:0;padding:24px clamp(48px,6vw,104px) 0}
-.look img{display:block;height:100%;width:auto;transition:opacity 300ms ease}
+.look img{display:block;height:100%;width:auto;transition:transform 450ms var(--ease-out),opacity 300ms ease}
 .cap{position:absolute;left:0;right:0;bottom:-28px;text-align:center;white-space:nowrap;opacity:0;transform:translateY(-6px);transition:opacity 250ms ease,transform 350ms var(--ease-out)}
 .cap b{font-weight:400}
 
@@ -91,12 +91,12 @@ h1{margin:0;font-weight:300;font-size:clamp(18px,1.7vw,24px);line-height:1.25;le
 
 /* Hover: pause the runway, lift the look under the pointer, quiet the rest */
 .track.has-show .look img{opacity:.4}
-.track .look.show img{opacity:1}
+.track .look.show img{opacity:1;transform:translateY(-8px) scale(1.02)}
 .look.show .cap{opacity:1;transform:translateY(0)}
 @media (hover:hover) and (pointer:fine){
   .stage:hover .track{animation-play-state:paused}
   .stage:not(.dragging) .track:hover .look img{opacity:.4}
-  .stage:not(.dragging) .track .look:hover img{opacity:1}
+  .stage:not(.dragging) .track .look:hover img{opacity:1;transform:translateY(-12px) scale(1.03)}
   .stage:not(.dragging) .look:hover .cap{opacity:1;transform:translateY(0)}
   .btn-solid:hover{background:transparent;color:var(--ink)}
   .btn-line:hover{background:var(--ink);color:var(--bg)}
@@ -126,6 +126,7 @@ h1{margin:0;font-weight:300;font-size:clamp(18px,1.7vw,24px);line-height:1.25;le
   .line span{animation:none;transform:none}
   .fade{animation:fade 300ms ease forwards!important}
   .look img,.cap{transition:opacity 200ms ease}
+  .track .look:hover img,.track .look.show img{transform:none}
 }
 </style>
 </head>
@@ -317,8 +318,11 @@ h1{margin:0;font-weight:300;font-size:clamp(18px,1.7vw,24px);line-height:1.25;le
   }
   stage.addEventListener('pointerup', end);
   stage.addEventListener('pointercancel', end);
-  stage.addEventListener('pointerenter', function(e){ if (e.pointerType === 'mouse') hovering = true; });
-  stage.addEventListener('pointerleave', function(e){ if (e.pointerType === 'mouse') hovering = false; });
+  // Keep the runway still until a lifted look has dropped back into place (the lift
+  // takes 450ms); moving while it settles is what left slices of hair behind.
+  var settle;
+  stage.addEventListener('pointerenter', function(e){ if (e.pointerType === 'mouse') { clearTimeout(settle); hovering = true; } });
+  stage.addEventListener('pointerleave', function(e){ if (e.pointerType === 'mouse') { clearTimeout(settle); settle = setTimeout(function(){ hovering = false; }, 520); } });
 
   // Tap a look (phones) to see its name, like hovering on desktop
   var showTimer, shown = null;
