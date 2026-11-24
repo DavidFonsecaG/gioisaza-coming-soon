@@ -7,3 +7,5 @@ Static page shown at gioisaza.com until the Shopify store launches.
 - `img/`: wordmark, monogram, favicons
 
 No build step. Deployed with Cloudflare Pages: build command empty, output directory `/`.
+
+Deploys run through Cloudflare Workers Builds on every push to `main` (see `wrangler.jsonc`).
