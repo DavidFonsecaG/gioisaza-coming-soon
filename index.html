@@ -57,8 +57,12 @@ header{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;paddin
 .right a{text-decoration:none;min-height:44px;display:inline-flex;align-items:center;transition:opacity 200ms ease}
 
 /* Runway */
-.stage{position:relative;min-height:0;display:flex;overflow:hidden;padding:58px 0 36px;opacity:0;animation:fade 900ms ease 150ms forwards}
+.stage{position:relative;min-height:0;display:flex;overflow:hidden;touch-action:pan-y;-webkit-user-select:none;user-select:none;padding:58px 0 36px;opacity:0;animation:fade 900ms ease 150ms forwards}
 .track{display:flex;height:100%;width:max-content;will-change:transform;animation:drift 100s linear infinite}
+.track.driven{animation:none}
+.stage.can-drag{cursor:grab}
+.stage.dragging{cursor:grabbing}
+.look img{-webkit-user-drag:none;pointer-events:none}
 .look{position:relative;flex:none;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;margin:0;padding:0 clamp(48px,6vw,104px)}
 .look img{display:block;height:100%;width:auto;transform:translate3d(0,0,0);will-change:transform;backface-visibility:hidden;transition:transform 450ms var(--ease-out),opacity 300ms ease,filter 300ms ease}
 .cap{position:absolute;left:0;right:0;bottom:-28px;text-align:center;white-space:nowrap;opacity:0;transform:translateY(-6px);transition:opacity 250ms ease,transform 350ms var(--ease-out)}
@@ -85,11 +89,14 @@ h1{margin:0;font-weight:300;font-size:clamp(18px,1.7vw,24px);line-height:1.25;le
 @keyframes fade{to{opacity:1}}
 
 /* Hover: pause the runway, lift the look under the pointer, quiet the rest */
+.track.has-show .look img{opacity:.42;filter:saturate(.6)}
+.track .look.show img{opacity:1;filter:none;transform:translate3d(0,-8px,0) scale(1.02)}
+.look.show .cap{opacity:1;transform:translateY(0)}
 @media (hover:hover) and (pointer:fine){
   .stage:hover .track{animation-play-state:paused}
-  .track:hover .look img{opacity:.42;filter:saturate(.6)}
-  .track .look:hover img{opacity:1;filter:none;transform:translate3d(0,-12px,0) scale(1.03)}
-  .look:hover .cap{opacity:1;transform:translateY(0)}
+  .stage:not(.dragging) .track:hover .look img{opacity:.42;filter:saturate(.6)}
+  .stage:not(.dragging) .track .look:hover img{opacity:1;filter:none;transform:translate3d(0,-12px,0) scale(1.03)}
+  .stage:not(.dragging) .look:hover .cap{opacity:1;transform:translateY(0)}
   .btn-solid:hover{background:transparent;color:var(--ink)}
   .btn-line:hover{background:var(--ink);color:var(--bg)}
   .right a:hover{opacity:.55}
@@ -97,8 +104,8 @@ h1{margin:0;font-weight:300;font-size:clamp(18px,1.7vw,24px);line-height:1.25;le
 }
 
 @media (max-width:760px){
-  .stage{padding:36px 0 20px}
-  .cap{display:none}
+  .stage{padding:36px 0 34px}
+  .cap{bottom:-24px}
   .bar .long{display:none}
   .bar .short{display:inline}
   .look{padding:0 28px}
@@ -114,7 +121,7 @@ h1{margin:0;font-weight:300;font-size:clamp(18px,1.7vw,24px);line-height:1.25;le
 }
 @media (prefers-reduced-motion:reduce){
   .track{animation:none}
-  .stage{overflow-x:auto;animation:fade 300ms ease forwards}
+  .stage{animation:fade 300ms ease forwards}
   .line span{animation:none;transform:none}
   .fade{animation:fade 300ms ease forwards!important}
   .look img,.cap{transition:opacity 200ms ease}
@@ -223,10 +230,24 @@ h1{margin:0;font-weight:300;font-size:clamp(18px,1.7vw,24px);line-height:1.25;le
   // Size every look in exact pixels from the runway's height. Safari otherwise sizes each
   // slot from the image file's width, which leaves big gaps between looks on iPhone.
   var imgs = track.querySelectorAll('img');
-  function restart(){
-    track.style.animation = 'none';
-    void track.offsetWidth;
-    track.style.animation = '';
+  var stage = document.querySelector('.stage');
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var small = window.matchMedia && matchMedia('(max-width: 760px)').matches;
+  var setW = 0;            // width of one set of looks
+  var x = 0;               // current offset in px (always in [-setW, 0))
+  var v = 0;               // current velocity, px/s (positive = moving right)
+  var drift = 0;           // resting drift speed, px/s
+  var hovering = false, dragging = false;
+  track.classList.add('driven');
+  function wrap(){ if (!setW) return; while (x >= 0) x -= setW; while (x < -setW) x += setW; }
+  function apply(){ track.style.transform = 'translate3d(' + x.toFixed(2) + 'px,0,0)'; }
+  function measure(){
+    var old = setW;
+    setW = track.scrollWidth / 2;
+    drift = reduce ? 0 : setW / (small ? 70 : 100);
+    if (old && setW) x = x / old * setW; else x = -setW / 2;
+    if (!dragging && !hovering && !v) v = drift;
+    wrap(); apply();
   }
   function size(){
     var h = track.clientHeight;
@@ -235,7 +256,7 @@ h1{margin:0;font-weight:300;font-size:clamp(18px,1.7vw,24px);line-height:1.25;le
       img.style.height = h + 'px';
       img.style.width = Math.round(h * widths[idx % widths.length] / 1100) + 'px';
     });
-    restart();
+    measure();
   }
   size();
   var pending = imgs.length;
@@ -246,6 +267,73 @@ h1{margin:0;font-weight:300;font-size:clamp(18px,1.7vw,24px);line-height:1.25;le
   var t;
   window.addEventListener('resize', function(){ clearTimeout(t); t = setTimeout(size, 150); });
   window.addEventListener('orientationchange', function(){ setTimeout(size, 300); });
+
+  // Animation loop: when nobody is touching the runway, velocity eases back to the drift
+  // (or to zero while a mouse hovers), so a flick glides and then settles into the drift.
+  var last = 0;
+  function frame(now){
+    var dt = last ? Math.min((now - last) / 1000, 0.05) : 0;
+    last = now;
+    if (!dragging && setW) {
+      var target = hovering ? 0 : drift;
+      var tau = hovering ? 0.25 : 0.6;
+      v = target + (v - target) * Math.exp(-dt / tau);
+      x += v * dt; wrap(); apply();
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  // Drag / swipe with momentum
+  stage.classList.add('can-drag');
+  var startX = 0, startPos = 0, startT = 0, moved = 0, samples = [], pid = null;
+  stage.addEventListener('pointerdown', function(e){
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    dragging = true; pid = e.pointerId; moved = 0;
+    startX = e.clientX; startPos = x; startT = performance.now();
+    samples = [{t: startT, x: e.clientX}];
+    v = 0;
+    stage.classList.add('dragging');
+    try { stage.setPointerCapture(pid); } catch(err) {}
+  });
+  stage.addEventListener('pointermove', function(e){
+    if (!dragging || e.pointerId !== pid) return;
+    var dx = e.clientX - startX;
+    moved = Math.max(moved, Math.abs(dx));
+    x = startPos + dx; wrap(); apply();
+    var now = performance.now();
+    samples.push({t: now, x: e.clientX});
+    while (samples.length > 2 && now - samples[0].t > 100) samples.shift();
+  });
+  function end(e){
+    if (!dragging || (e && e.pointerId !== pid)) return;
+    dragging = false; stage.classList.remove('dragging');
+    var a = samples[0], b = samples[samples.length - 1];
+    var dtm = (b.t - a.t) / 1000;
+    var fling = dtm > 0 ? (b.x - a.x) / dtm : 0;
+    if (performance.now() - b.t > 80) fling = 0;           // finger rested before lifting
+    v = reduce ? 0 : Math.max(-3500, Math.min(3500, fling));
+    if (moved < 6 && performance.now() - startT < 350 && e) tap(e.clientX, e.clientY);
+  }
+  stage.addEventListener('pointerup', end);
+  stage.addEventListener('pointercancel', end);
+  stage.addEventListener('pointerenter', function(e){ if (e.pointerType === 'mouse') hovering = true; });
+  stage.addEventListener('pointerleave', function(e){ if (e.pointerType === 'mouse') hovering = false; });
+
+  // Tap a look (phones) to see its name, like hovering on desktop
+  var showTimer, shown = null;
+  function clearShow(){ if (shown) shown.classList.remove('show'); shown = null; track.classList.remove('has-show'); }
+  function tap(cx, cy){
+    var hit = null;
+    track.querySelectorAll('.look').forEach(function(f){
+      var r = f.getBoundingClientRect();
+      if (cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom) hit = f;
+    });
+    clearTimeout(showTimer); clearShow();
+    if (!hit) return;
+    shown = hit; hit.classList.add('show'); track.classList.add('has-show');
+    showTimer = setTimeout(clearShow, 2500);
+  }
 })();
 </script>
 </body>
