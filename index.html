@@ -173,7 +173,8 @@ h1{margin:0;font-weight:300;font-size:clamp(18px,1.7vw,24px);line-height:1.25;le
       var img = document.createElement('img');
       img.src = 'img/looks/m' + n + '.webp';
       img.alt = set === 0 ? l[1] : '';
-      img.loading = (set === 0 && i < 7) ? 'eager' : 'lazy';
+      img.loading = 'eager';
+      img.decoding = 'async';
       img.dataset.altEs = l[0]; img.dataset.altEn = l[1];
       var cap = document.createElement('figcaption');
       cap.className = 'cap small';
