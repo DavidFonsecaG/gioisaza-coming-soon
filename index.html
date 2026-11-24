@@ -57,12 +57,11 @@ header{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;paddin
 .right a{text-decoration:none;min-height:44px;display:inline-flex;align-items:center;transition:opacity 200ms ease}
 
 /* Runway */
-.stage{position:relative;min-height:0;display:flex;overflow:hidden;padding:50px 0 20px;opacity:0;animation:fade 900ms ease 150ms forwards}
+.stage{position:relative;min-height:0;display:flex;overflow:hidden;padding:58px 0 36px;opacity:0;animation:fade 900ms ease 150ms forwards}
 .track{display:flex;height:100%;width:max-content;animation:drift 100s linear infinite}
-.look{position:relative;flex:none;height:100%;display:flex;flex-direction:column;align-items:center;margin:0;padding:0 clamp(48px,6vw,104px)}
+.look{position:relative;flex:none;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;margin:0;padding:0 clamp(48px,6vw,104px)}
 .look img{display:block;height:100%;width:auto;transition:transform 450ms var(--ease-out),opacity 300ms ease,filter 300ms ease}
-.cap{position:absolute;left:0;right:0;bottom:-16px;text-align:center;white-space:nowrap;opacity:0;transform:translateY(-6px);transition:opacity 250ms ease,transform 350ms var(--ease-out)}
-.cap span{color:var(--muted);margin-right:8px}
+.cap{position:absolute;left:0;right:0;bottom:-28px;text-align:center;white-space:nowrap;opacity:0;transform:translateY(-6px);transition:opacity 250ms ease,transform 350ms var(--ease-out)}
 .cap b{font-weight:400}
 
 @keyframes drift{from{transform:translateX(-50%)}to{transform:translateX(0)}}
@@ -99,9 +98,10 @@ h1{margin:0;font-weight:300;font-size:clamp(18px,1.7vw,24px);line-height:1.25;le
 
 @media (max-width:760px){
   .stage{padding:36px 0 20px}
+  .cap{display:none}
   .bar .long{display:none}
   .bar .short{display:inline}
-  .look{padding:0 14px}
+  .look{padding:0 10px}
   .cta{flex-direction:column;align-items:stretch;gap:14px;padding:14px 20px 16px}
   .cta-text{justify-content:center;text-align:center}
   .mono{display:none}
@@ -196,7 +196,7 @@ h1{margin:0;font-weight:300;font-size:clamp(18px,1.7vw,24px);line-height:1.25;le
       img.dataset.altEs = l[0]; img.dataset.altEn = l[1];
       var cap = document.createElement('figcaption');
       cap.className = 'cap small';
-      cap.innerHTML = '<span>' + n + '</span><b></b>';
+      cap.innerHTML = '<b></b>';
       var b = cap.querySelector('b');
       b.textContent = l[1]; b.dataset.es = l[0]; b.dataset.en = l[1];
       fig.appendChild(img); fig.appendChild(cap);
@@ -220,20 +220,32 @@ h1{margin:0;font-weight:300;font-size:clamp(18px,1.7vw,24px);line-height:1.25;le
   try { saved = localStorage.getItem('gi-lang'); } catch(e) {}
   setLang(saved === 'es' ? 'es' : 'en');
 
-  // Safety net for Safari/iOS: once every look has loaded, restart the drift so it is
-  // measured against the final width of the runway.
+  // Size every look in exact pixels from the runway's height. Safari otherwise sizes each
+  // slot from the image file's width, which leaves big gaps between looks on iPhone.
   var imgs = track.querySelectorAll('img');
-  var pending = imgs.length;
   function restart(){
     track.style.animation = 'none';
     void track.offsetWidth;
     track.style.animation = '';
   }
-  function done(){ if (--pending === 0) restart(); }
+  function size(){
+    var h = track.clientHeight;
+    if (!h) return;
+    imgs.forEach(function(img, idx){
+      img.style.height = h + 'px';
+      img.style.width = Math.round(h * widths[idx % widths.length] / 1100) + 'px';
+    });
+    restart();
+  }
+  size();
+  var pending = imgs.length;
+  function done(){ if (--pending === 0) size(); }
   imgs.forEach(function(img){
     if (img.complete) done(); else { img.addEventListener('load', done); img.addEventListener('error', done); }
   });
-  window.addEventListener('orientationchange', restart);
+  var t;
+  window.addEventListener('resize', function(){ clearTimeout(t); t = setTimeout(size, 150); });
+  window.addEventListener('orientationchange', function(){ setTimeout(size, 300); });
 })();
 </script>
 </body>
