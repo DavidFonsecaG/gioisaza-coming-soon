@@ -58,15 +58,15 @@ header{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;paddin
 .right a{text-decoration:none;min-height:44px;display:inline-flex;align-items:center;transition:opacity 200ms ease}
 
 /* Runway */
-.stage{position:relative;min-height:0;display:flex;overflow:hidden;touch-action:pan-y;-webkit-user-select:none;user-select:none;padding:34px 0 36px;opacity:0;animation:fade 900ms ease 150ms forwards}
+.stage{position:relative;min-height:0;display:flex;overflow:hidden;touch-action:pan-y;-webkit-user-select:none;user-select:none;padding:34px 0 0;opacity:0;animation:fade 900ms ease 150ms forwards}
 .track{display:flex;height:100%;width:max-content;animation:drift 100s linear infinite}
 .track.driven{animation:none}
 .stage.can-drag{cursor:grab}
 .stage.dragging{cursor:grabbing}
 .look img{-webkit-user-drag:none;pointer-events:none}
-.look{position:relative;flex:none;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;margin:0;padding:24px clamp(48px,6vw,104px) 0}
+.look{position:relative;flex:none;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;margin:0;padding:24px clamp(48px,6vw,104px) 40px}
 .look img{display:block;height:100%;width:auto;transition:transform 450ms var(--ease-out),opacity 300ms ease}
-.cap{position:absolute;left:0;right:0;bottom:-28px;text-align:center;white-space:nowrap;opacity:0;transform:translateY(-6px);transition:opacity 250ms ease,transform 350ms var(--ease-out)}
+.cap{position:absolute;left:0;right:0;bottom:12px;text-align:center;white-space:nowrap;opacity:0;transform:translateY(-6px);transition:opacity 250ms ease,transform 350ms var(--ease-out)}
 .cap b{font-weight:400}
 
 @keyframes drift{from{transform:translateX(-50%)}to{transform:translateX(0)}}
@@ -105,11 +105,11 @@ h1{margin:0;font-weight:300;font-size:clamp(18px,1.7vw,24px);line-height:1.25;le
 }
 
 @media (max-width:760px){
-  .stage{padding:12px 0 34px}
-  .cap{bottom:-24px}
+  .stage{padding:12px 0 0}
+  .cap{bottom:10px}
   .bar .long{display:none}
   .bar .short{display:inline}
-  .look{padding:24px 28px 0}
+  .look{padding:24px 28px 34px}
   .cta{flex-direction:column;align-items:stretch;gap:14px;padding:14px 20px 16px}
   .cta-text{justify-content:center;text-align:center}
   .mono{display:none}
@@ -251,7 +251,10 @@ h1{margin:0;font-weight:300;font-size:clamp(18px,1.7vw,24px);line-height:1.25;le
     wrap(); apply();
   }
   function size(){
-    var h = track.clientHeight - 24;   // 24px headroom for the hover lift
+    var first = track.querySelector('.look');
+    var cs = first ? getComputedStyle(first) : null;
+    var pad = cs ? parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom) : 0;
+    var h = track.clientHeight - pad;   // headroom for the lift above, the name below
     if (!h) return;
     imgs.forEach(function(img, idx){
       img.style.height = h + 'px';
