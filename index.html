@@ -43,7 +43,7 @@ header{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;paddin
 .right a{text-decoration:none;min-height:44px;display:inline-flex;align-items:center;transition:opacity 200ms ease}
 
 /* Runway */
-.stage{position:relative;min-height:0;overflow:hidden;padding:50px 0 20px;opacity:0;animation:fade 900ms ease 150ms forwards}
+.stage{position:relative;min-height:0;display:flex;overflow:hidden;padding:50px 0 20px;opacity:0;animation:fade 900ms ease 150ms forwards}
 .track{display:flex;height:100%;width:max-content;animation:drift 100s linear infinite}
 .look{position:relative;flex:none;height:100%;display:flex;flex-direction:column;align-items:center;margin:0;padding:0 clamp(48px,6vw,104px)}
 .look img{display:block;height:100%;width:auto;transition:transform 450ms var(--ease-out),opacity 300ms ease,filter 300ms ease}
@@ -162,6 +162,8 @@ h1{margin:0;font-weight:300;font-size:clamp(18px,1.7vw,24px);line-height:1.25;le
     ['Chaqueta de cuero texturizado','Textured leather jacket'],
     ['Traje cruzado bordado','Embroidered double-breasted suit']
   ];
+  // Real pixel widths of each look (all 1100px tall), so the runway knows its width before images load.
+  var widths = [332,339,378,350,344,342,359,407,318,353,336,327];
   var track = document.getElementById('track');
   // Two identical sets make the loop seamless; the copy is hidden from screen readers.
   for (var set = 0; set < 2; set++) {
@@ -171,6 +173,8 @@ h1{margin:0;font-weight:300;font-size:clamp(18px,1.7vw,24px);line-height:1.25;le
       fig.className = 'look';
       if (set === 1) fig.setAttribute('aria-hidden', 'true');
       var img = document.createElement('img');
+      img.width = widths[i];
+      img.height = 1100;
       img.src = 'img/looks/m' + n + '.webp';
       img.alt = set === 0 ? l[1] : '';
       img.loading = 'eager';
@@ -201,6 +205,21 @@ h1{margin:0;font-weight:300;font-size:clamp(18px,1.7vw,24px);line-height:1.25;le
   var saved = null;
   try { saved = localStorage.getItem('gi-lang'); } catch(e) {}
   setLang(saved === 'es' ? 'es' : 'en');
+
+  // Safety net for Safari/iOS: once every look has loaded, restart the drift so it is
+  // measured against the final width of the runway.
+  var imgs = track.querySelectorAll('img');
+  var pending = imgs.length;
+  function restart(){
+    track.style.animation = 'none';
+    void track.offsetWidth;
+    track.style.animation = '';
+  }
+  function done(){ if (--pending === 0) restart(); }
+  imgs.forEach(function(img){
+    if (img.complete) done(); else { img.addEventListener('load', done); img.addEventListener('error', done); }
+  });
+  window.addEventListener('orientationchange', restart);
 })();
 </script>
 </body>
