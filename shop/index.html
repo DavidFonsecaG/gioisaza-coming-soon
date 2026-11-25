@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gio Isaza - Shop (proof of concept)</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/svg+xml" href="../img/logo/favicon.svg?v=3">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400&display=swap" rel="stylesheet">
+<script type="module" src="https://cdn.shopify.com/storefront/web-components.js"></script>
+<style>
+:root{--bg:#EEEBE6;--ink:#252526;--muted:#77736C;--line:rgba(37,37,38,.12);--ease-out:cubic-bezier(0.23,1,0.32,1)}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:'Jost','Helvetica Neue',Arial,sans-serif;font-weight:300;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+button{font-family:inherit}
+:focus-visible{outline:1px solid var(--ink);outline-offset:3px}
+.small{font-size:11px;font-weight:400;letter-spacing:.1em;text-transform:uppercase}
+
+.note{background:#000;color:#fff;text-align:center;padding:6px 12px;font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+header{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:14px clamp(20px,3.6vw,48px)}
+header .logo img{height:24px;display:block}
+header .right{justify-self:end}
+.bag-btn{background:none;border:0;cursor:pointer;min-height:44px;color:var(--ink);padding:0}
+
+main{padding:24px clamp(20px,3.6vw,48px) 80px}
+.intro{display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin:8px 0 28px}
+.intro h1{margin:0;font-weight:300;font-size:clamp(22px,2.2vw,30px);text-transform:uppercase;letter-spacing:.02em}
+.intro p{margin:0;color:var(--muted)}
+
+/* Product grid */
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:40px 20px}
+.card{display:block;width:100%;background:none;border:0;padding:0;text-align:left;cursor:pointer;color:inherit}
+.card .media{display:block;aspect-ratio:3/4;background:#E4E0D9;overflow:hidden}
+.card .media shopify-media,.card .media img{display:block;width:100%;height:100%}
+.card .media img{object-fit:cover;transition:transform 600ms var(--ease-out)}
+.card .meta{display:flex;justify-content:space-between;gap:12px;margin-top:12px;font-size:14px}
+.card .price{color:var(--muted);white-space:nowrap}
+@media (hover:hover) and (pointer:fine){ .card:hover .media img{transform:scale(1.03)} }
+.card:active{transform:scale(0.99)}
+
+/* Loading placeholders */
+.ph{background:#E4E0D9;border-radius:2px}
+
+/* Product dialog */
+dialog.pdp{border:0;padding:0;max-width:980px;width:calc(100% - 32px);background:var(--bg);color:var(--ink)}
+dialog.pdp::backdrop{background:rgba(20,20,20,.45)}
+dialog.pdp[open]{animation:pop 260ms var(--ease-out)}
+@keyframes pop{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+.pdp-inner{display:grid;grid-template-columns:1.1fr 1fr;min-height:520px}
+.pdp-media{background:#E4E0D9}
+.pdp-media shopify-media,.pdp-media img{display:block;width:100%;height:100%;object-fit:cover}
+.pdp-info{padding:36px 32px;display:flex;flex-direction:column;gap:14px;position:relative}
+.pdp-info h2{margin:0;font-weight:300;font-size:26px;text-transform:uppercase;letter-spacing:.02em}
+.pdp-info .price{font-size:16px}
+.pdp-info .desc{color:var(--muted);font-size:14px;line-height:1.6;max-height:9em;overflow:auto}
+.close{position:absolute;top:12px;right:12px;background:none;border:0;cursor:pointer;min-width:44px;min-height:44px;font-size:22px;line-height:1;color:var(--ink)}
+shopify-variant-selector::part(form){display:flex;flex-direction:column;gap:14px}
+shopify-variant-selector::part(label){font-size:11px;font-weight:400;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+shopify-variant-selector::part(radio){border:1px solid var(--line);border-radius:0;padding:8px 14px;font-family:'Jost',sans-serif;font-size:13px}
+shopify-variant-selector::part(radio-selected){border-color:var(--ink);background:var(--ink);color:var(--bg)}
+shopify-variant-selector::part(radio-disabled){opacity:.35;text-decoration:line-through}
+.actions{display:flex;gap:10px;margin-top:auto}
+.btn{flex:1;min-height:46px;padding:0 18px;font-size:11px;font-weight:400;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--ink);cursor:pointer;transition:transform 160ms var(--ease-out),background-color 200ms ease,color 200ms ease}
+.btn-solid{background:var(--ink);color:var(--bg)}
+.btn-line{background:transparent;color:var(--ink)}
+.btn:active{transform:scale(0.97)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* Shopify cart, styled to match */
+shopify-cart::part(dialog){background:var(--bg);color:var(--ink);font-family:'Jost',sans-serif;border:0;border-radius:0}
+shopify-cart::part(primary-button){background:var(--ink);color:var(--bg);border-radius:0;font-family:'Jost',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+shopify-cart::part(secondary-button){border-radius:0;font-family:'Jost',sans-serif}
+shopify-cart::part(line-heading){font-weight:400;text-transform:uppercase;letter-spacing:.04em;font-size:13px}
+
+@media (max-width:900px){ .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 14px} }
+@media (max-width:760px){
+  .pdp-inner{grid-template-columns:1fr}
+  .pdp-media{aspect-ratio:4/5}
+  .pdp-info{padding:24px 20px}
+  .intro{flex-direction:column;gap:6px}
+  header .logo img{height:20px}
+}
+@media (prefers-reduced-motion:reduce){ dialog.pdp[open]{animation:none} .card .media img{transition:none} }
+</style>
+</head>
+<body>
+<div class="note">Proof of concept · demo products from Shopify's sample store</div>
+
+<!-- Connects the page to a Shopify store. For Gio Isaza this becomes the client's store domain. -->
+<shopify-store id="store" store-domain="https://demostore.mock.shop" country="US" language="en"></shopify-store>
+
+<header>
+  <span></span>
+  <a class="logo" href="../"><img src="../img/logo/wordmark.svg" alt="Gio Isaza" width="183" height="24"></a>
+  <div class="right"><button class="bag-btn small" type="button" onclick="document.getElementById('cart').showModal()">Bag</button></div>
+</header>
+
+<main>
+  <div class="intro">
+    <h1>The collection</h1>
+    <p class="small">Select a piece to see sizes and add it to your bag</p>
+  </div>
+
+  <!-- Product list: Shopify fills this grid with real products, prices and photos -->
+  <div class="grid">
+    <shopify-list-context type="product" query="products" first="8">
+      <template>
+        <button class="card" type="button"
+          onclick="document.getElementById('pdp-context').update(event); document.getElementById('pdp').showModal();">
+          <span class="media"><shopify-media query="product.selectedOrFirstAvailableVariant.image" width="600" height="800"></shopify-media></span>
+          <span class="meta">
+            <span><shopify-data query="product.title"></shopify-data></span>
+            <span class="price"><shopify-money query="product.selectedOrFirstAvailableVariant.price"></shopify-money></span>
+          </span>
+        </button>
+      </template>
+      <div shopify-loading-placeholder class="card"><span class="media ph"></span><span class="meta"><span class="ph" style="width:60%;height:14px;display:block"></span></span></div>
+    </shopify-list-context>
+  </div>
+</main>
+
+<!-- Product detail: opens over the grid, filled from whichever card was clicked -->
+<dialog class="pdp" id="pdp">
+  <shopify-context id="pdp-context" type="product" wait-for-update>
+    <template>
+      <div class="pdp-inner">
+        <div class="pdp-media"><shopify-media query="product.selectedOrFirstAvailableVariant.image" width="800" height="1000"></shopify-media></div>
+        <div class="pdp-info">
+          <button class="close" type="button" aria-label="Close" onclick="document.getElementById('pdp').close()">×</button>
+          <h2><shopify-data query="product.title"></shopify-data></h2>
+          <div class="price"><shopify-money query="product.selectedOrFirstAvailableVariant.price"></shopify-money></div>
+          <shopify-variant-selector></shopify-variant-selector>
+          <div class="desc"><shopify-data query="product.descriptionHtml"></shopify-data></div>
+          <div class="actions">
+            <button class="btn btn-solid" type="button"
+              shopify-attr--disabled="!product.selectedOrFirstAvailableVariant.availableForSale"
+              onclick="document.getElementById('cart').addLine(event).showModal(); document.getElementById('pdp').close();">Add to bag</button>
+            <button class="btn btn-line" type="button"
+              shopify-attr--disabled="!product.selectedOrFirstAvailableVariant.availableForSale"
+              onclick="document.getElementById('store').buyNow(event)">Buy now</button>
+          </div>
+        </div>
+      </div>
+    </template>
+  </shopify-context>
+</dialog>
+
+<!-- Bag: Shopify keeps the cart and sends customers to Shopify checkout -->
+<shopify-cart id="cart">
+  <div slot="empty">Your bag is empty.</div>
+  <span slot="checkout-button">Checkout</span>
+</shopify-cart>
+
+<script>
+  // Close the product dialog when clicking the dark area around it
+  document.getElementById('pdp').addEventListener('click', function(e){ if (e.target === this) this.close(); });
+</script>
+</body>
+</html>
